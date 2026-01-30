@@ -1,4 +1,4 @@
-#Viikko 3#
+# Week-3-Native
 
 MVVM (Model-View-ViewModel) erottaa nyt sovelluksen logiikan UI:sta ja tekee ohjelmasta entistä ylläpidettävämmän kun Model sisältää datan, ViewModel hallitsee tilan ja logiikan ja View sitten vain näyttää datan ja reagoi muutoksiin.
 
