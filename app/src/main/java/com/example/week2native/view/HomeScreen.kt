@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.week2native.view
 
 import androidx.compose.foundation.layout.*
@@ -11,23 +13,76 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.week2native.viewmodel.TaskViewModel
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import com.example.week2native.model.Task
 
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: TaskViewModel = viewModel()) {
+fun HomeScreen(
+    viewModel: TaskViewModel,
+    onTaskClick: (Int) -> Unit = {},
+    onAddClick: () -> Unit = {},
+    onNavigateCalendar: () -> Unit = {},
+    onNavigateSettings: () -> Unit = {}
+
+    ) {
     val tasks by viewModel.tasks.collectAsState()
     val selectedTask by viewModel.selectedTask.collectAsState()
+    val addTaskFlag by viewModel.addTaskDialogVisible.collectAsState()
+
+    // Scaffold ja paddingValues auttaa tumman tilan kanssa, muuten näkyy silti valkoista
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
 
     Column(modifier = Modifier
         .fillMaxSize()
+        .padding(paddingValues)
         .padding(16.dp)
     ) {
-        Text("Todo List", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+        // Yläpalkki jossa otsikko ja navigaatio kalenteriin
+        TopAppBar(
+            title = { Text("Todo List") },
+            actions = {
+                IconButton(onClick = onNavigateCalendar) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = "Go to calendar"
+                    )
+                }
+                IconButton(onClick = onNavigateSettings) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Go to settings"
+                    )
+                }
+            }
+        )
+
+        Row {
+            Button(
+                onClick = onAddClick, // Nyt käytetään callbackia
+                modifier = Modifier.padding(8.dp),
+            ) {
+                Text("Add Task")
+            }
+
+            // Tämä "Active" nappi tekee nyt saman kuin Add Task – en jaksanut muuttaa
+            Button(
+                onClick = { /* esim. filtteri aktiivisille taskeille */ },
+                modifier = Modifier.padding(8.dp),
+            ) {
+                Text("Active")
+            }
+        }
+
 
         // Lista LazyColumnilla
         LazyColumn(
@@ -76,8 +131,20 @@ fun HomeScreen(viewModel: TaskViewModel = viewModel()) {
         }
 
 
-
+// Dialog näkyy jos selectedTask != null, eli taskia on painettu
     if (selectedTask != null) {
-    DetailDialog(task = selectedTask!!, onClose = { viewModel.closeDialog() }, onUpdate = { viewModel.updateTask(it) })
+    DetailDialog(task = selectedTask!!,
+        onClose = { viewModel.closeDialog() },
+        onUpdate = { viewModel.updateTask(it) }
+       )
     }
+
+// Näytä AddDialog, jos addTaskFlag = true
+if (addTaskFlag) {
+    AddDialog(
+        onClose = { viewModel.addTaskDialogVisible.value = false },
+        onUpdate = { viewModel.addTask(it) }
+    )
+  }
 }
+    }
